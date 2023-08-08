@@ -28,8 +28,12 @@ class MN40(Dataset):
         cls = self.meta.iloc[idx, 1]
         off_name = self.meta.iloc[idx, 3]
         
+        # Get pointcloud
         verts, faces = read_off('dataset/ModelNet40/' + off_name)
         cloud = sample_off(self.num_sample, verts, faces)
+        
+        # Normalize
+        cloud = norm_cloud(cloud)
         
         return dict(cls=cls, cloud=cloud)
         
@@ -66,6 +70,20 @@ def sample_off(num_sample, verts, faces):
         
     sample_list = np.random.choice(len(faces), num_sample)
     cloud = torch.stack([pick_point(faces[i], verts) for i in sample_list])
+    
+    return cloud
+
+def norm_cloud(cloud):
+    '''
+        Normalize input pointcloud into a unit sphere
+    '''
+    # Move to center
+    mean = torch.mean(cloud, dim=0)
+    cloud = cloud - mean.repeat(cloud.shape[0], 1)
+    
+    # Get max norm
+    max_norm = max(np.linalg.norm(cloud, axis=1))
+    cloud = cloud / max_norm
     
     return cloud
         
