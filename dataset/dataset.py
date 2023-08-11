@@ -42,10 +42,20 @@ def read_off(filepath):
         Read .off file and return vertices and faces
     '''
     with open(filepath) as off:
-        if 'OFF' not in off.readline():
+        first_line = off.readline()
+        if 'OFF' not in first_line:
             raise Exception('FileError: Invalid .off file.')
         
-        num_vert, num_face, _ = map(int, off.readline().split())
+        if len(first_line) > 4:
+            metadata = first_line[3:]
+        else:
+            metadata = off.readline()
+            
+        try:
+            num_vert, num_face, _ = map(int, metadata.split())
+        except:
+            raise Exception('invalid off file;', filepath, metadata)
+        
         verts = [np.array(off.readline().split(), dtype='float32') for i in range(num_vert)]
         faces = [np.array(off.readline().split(), dtype='int') for i in range(num_face)]
         
@@ -95,10 +105,10 @@ if __name__ == '__main__':
     print(f'Train dataset size: {len(dataset_train)}')
     print(f'Test dataset size: {len(dataset_test)}')
     
-    item = dataset_test[2400]
-    print(item['cls'])
-    print(len(item['cloud']))
-    print(item['cloud'][:10])
+    item = dataset_test[np.random.randint(0, len(dataset_test))]
+    print('Class:', item['cls'])
+    print('Sampled points:', len(item['cloud']))
+    print('Data samples:\n', item['cloud'][:5])
     
     import sys, os
     sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
