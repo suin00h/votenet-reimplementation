@@ -3,7 +3,7 @@ import torch
 from torch import nn
 
 class PointNet(nn.Module):
-    def __init__(self, enable_tnet=True, require_global_feature=True, class_num=40):
+    def __init__(self, enable_tnet=True, require_global_feature=True, class_num: int=40):
         '''
             enable_tnet: [True|False] Determine whether to use t-net inside the model.
             require_global_feature: [True|False] If true, the model outputs just a global feature vector of size [B, 1024], else returns class scores.
