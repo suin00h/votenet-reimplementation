@@ -99,3 +99,9 @@ if __name__ == '__main__':
     print(item['cls'])
     print(len(item['cloud']))
     print(item['cloud'][:10])
+    
+    import sys, os
+    sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+    from utils.visualize import show_cloud
+    
+    show_cloud(item['cloud'])
