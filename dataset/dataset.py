@@ -2,7 +2,11 @@ import pandas as pd
 # import dask.dataframe as dd
 import numpy as np
 import torch
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
+from utils.visualize import show_cloud
+from utils.data import *
 from torch.utils.data import Dataset
 
 class MN40(Dataset):
@@ -35,7 +39,7 @@ class MN40(Dataset):
         # Normalize
         cloud = norm_cloud(cloud)
         
-        return dict(cls=cls, cloud=cloud)
+        return dict(cls=get_cls_idx(cls), cloud=cloud)
         
 def read_off(filepath):
     '''
@@ -106,12 +110,8 @@ if __name__ == '__main__':
     print(f'Test dataset size: {len(dataset_test)}')
     
     item = dataset_test[np.random.randint(0, len(dataset_test))]
-    print('Class:', item['cls'])
+    print('Class:', get_cls(item['cls']))
     print('Sampled points:', len(item['cloud']))
     print('Data samples:\n', item['cloud'][:5])
-    
-    import sys, os
-    sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-    from utils.visualize import show_cloud
     
     show_cloud(item['cloud'])
