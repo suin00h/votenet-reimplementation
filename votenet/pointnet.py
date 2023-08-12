@@ -17,8 +17,13 @@ class PointNet(nn.Module):
         self.input_transform = TNet(size=3, in_channel=1, first_kernel_size=(1, 3))
         self.feature_transform = TNet(size=64, in_channel=64)
         
-        self.mlp = [self.get_mlp(self.channels[0], self.channels[1], (1, 3))]
-        self.mlp += [self.get_mlp(self.channels[i], self.channels[i+1]) for i in range(1, 5)]
+        self.iden3 = torch.eye(3)
+        self.iden64 = torch.eye(64)
+        
+        self.mlp = nn.ModuleList(
+            [self.get_mlp(self.channels[0], self.channels[1], (1, 3))]
+            + [self.get_mlp(self.channels[i], self.channels[i+1]) for i in range(1, 5)]
+        )
         
         self.fc1 = nn.Sequential(
             nn.Linear(self.channels[5], self.channels[6]),
@@ -45,13 +50,14 @@ class PointNet(nn.Module):
         num_points = x.shape[1]
         
         x = x.unsqueeze(1) # [B, 1, N, 3]
-        input_transform = self.input_transform(x).unsqueeze(1) if self.enable_tnet else torch.eye(3)
+        
+        input_transform = self.input_transform(x).unsqueeze(1) if self.enable_tnet else self.iden3
         x = torch.matmul(x, input_transform)
         
         x = self.mlp[0](x)
         x = self.mlp[1](x) # [B, 64, N, 1]
         
-        feature_transform = self.feature_transform(x) if self.enable_tnet else torch.eye(64)
+        feature_transform = self.feature_transform(x) if self.enable_tnet else self.iden64
         x = torch.matmul(feature_transform, x.squeeze())
         
         x = x.unsqueeze(3)
@@ -78,8 +84,10 @@ class TNet(nn.Module):
         self.size = size
         self.channels = [in_channel, 64, 128, 1024, 512, 256]
         
-        self.mlp = [self.get_mlp(self.channels[0], self.channels[1], first_kernel_size)]
-        self.mlp += [self.get_mlp(self.channels[i], self.channels[i+1]) for i in range(1, 3)]
+        self.mlp = nn.ModuleList(
+            [self.get_mlp(self.channels[0], self.channels[1], first_kernel_size)]
+            + [self.get_mlp(self.channels[i], self.channels[i+1]) for i in range(1, 3)]
+        )
         
         self.fc1 = nn.Sequential(
             nn.Linear(self.channels[3], self.channels[4]),
