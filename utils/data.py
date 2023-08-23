@@ -1,4 +1,4 @@
-class_list = ['airplane', 'bathtub', 'bed', 'bench', 'bookshelf',
+modelnet40_class_list = ['airplane', 'bathtub', 'bed', 'bench', 'bookshelf',
               'bottle', 'bowl', 'car', 'chair', 'cone',
               'cup', 'curtain', 'desk', 'door', 'dresser',
               'flower', 'glass', 'guitar', 'keyboard', 'lamp',
@@ -8,7 +8,7 @@ class_list = ['airplane', 'bathtub', 'bed', 'bench', 'bookshelf',
               'toilet', 'tv', 'vase', 'wardrobe', 'xbox']
 
 def get_cls_idx(cls: str):
-    return class_list.index(cls)
+    return modelnet40_class_list.index(cls)
 
 def get_cls(idx: int):
-    return class_list[idx]
+    return modelnet40_class_list[idx]
