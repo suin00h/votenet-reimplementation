@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-class PointNetpp(nn.Module):
+class VoteNet(nn.Module):
     def __init__(self):
         super().__init__()
 
