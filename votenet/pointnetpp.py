@@ -6,19 +6,12 @@ import torch.nn as nn
 class PointNetpp(nn.Module):
     def __init__(self):
         super().__init__()
-
-    def forward(self, x):
-        return x
-
-class SetAbstraction(nn.Module):
-    def __init__(self):
-        super().__init__()
         
         self.set_abstraction_layers = nn.ModuleList([])
 
     def forward(self, x):
         return x
-    
+
 class SetAbstractionLayer(nn.Module):
     '''
         Takes an [B, N, (d + C)] tensor as input, that is from N points with d-dim coordinates and C-dim point feature.
