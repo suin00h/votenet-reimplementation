@@ -21,14 +21,11 @@ class SetAbstractionLayer(nn.Module):
     ...
     """
     def __init__(
-        self,
-        num_sample: int,
-        ball_query_radius: float
+        self
     ):
         super().__init__()
         
-        self.num_sample = num_sample
-        self.ball_query_radius = ball_query_radius
+        ...
 
     def forward(
         self,
@@ -52,7 +49,8 @@ class SetAbstractionLayer(nn.Module):
                 and the output is abstracted by its centroid and local feature.
         """
         
-        return x
+        
+        return ...
     
 @torch.no_grad()
 def FPS(
