@@ -13,10 +13,13 @@ class PointNetpp(nn.Module):
         return x
 
 class SetAbstractionLayer(nn.Module):
-    '''
-        Takes an [B, N, (d + C)] tensor as input, that is from N points with d-dim coordinates and C-dim point feature.
-        Outputs an [B, N', (d + C')] tensor of N' subsampled points with d-dim coordinates and C'-dim point feature.
-    '''
+    """
+    Single set abstraction layer of PointNet++ architecture.
+        
+    Parameters
+    ----------
+    ...
+    """
     def __init__(
         self,
         num_sample: int,
@@ -27,16 +30,27 @@ class SetAbstractionLayer(nn.Module):
         self.num_sample = num_sample
         self.ball_query_radius = ball_query_radius
 
-    def forward(self, x):
-        point_clouds = x[:,:, :3]
-        # [1] Sampling layer
-        centroid_indices_batch = FPS(points=point_clouds, num_sample=self.num_sample)
+    def forward(
+        self,
+        point_coord: torch.Tensor,
+        features: torch.Tensor
+    ):
+        """
+        Args:
+            point_coord: (B, N, 3) tensor
+            features: (B, N, C) tensor
         
-        for point_cloud, centroid_indices in zip(point_clouds, centroid_indices_batch):
-            # [2] Grouping Layer
-            cluster_list = ball_query(points=point_cloud, centroid_indices=centroid_indices, radius=self.ball_query_radius)
+        Returns:
+            point_coord: (B, N, 3) tensor containing point clouds' xyz coordinates.
+            features: (B, N, C) tensor
             
-            # [3] PointNet Layer
+        Todo:
+            Sampling layer: use farthest point sampling(FPS) to get subset of points.
+            Grouping layer: use ball query algorithm to get N' clusters of points.
+                Each clusters have different number of points upper-limited to K.
+            PointNet layer: each clusters are processed within PointNet-like module
+                and the output is abstracted by its centroid and local feature.
+        """
         
         return x
     
