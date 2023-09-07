@@ -18,13 +18,15 @@ class SetAbstractionLayer(nn.Module):
     Single set abstraction layer of PointNet++ architecture.
     
     Args:
-        ...
+        num_sample: the number of points to be sampled by sampler.
     """
     def __init__(
-        self
+        self,
+        num_sample: int
     ):
         super().__init__()
         
+        self.num_sample = num_sample
         self.sampling = FarthestPointSampling.apply
 
     def forward(
