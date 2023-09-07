@@ -7,7 +7,7 @@ from tqdm import tqdm
 from torch import optim
 from torch.utils.data import DataLoader
 from dataset.dataset import MN40
-from votenet.pointnet import PointNet
+from models.pointnet import PointNet
 from utils.data import get_cls_idx
 
 def train(
