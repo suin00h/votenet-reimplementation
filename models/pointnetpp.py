@@ -16,7 +16,7 @@ class PointNetpp(nn.Module):
 class SetAbstractionLayer(nn.Module):
     """
     Single set abstraction layer of PointNet++ architecture.
-        
+    
     Args:
         ...
     """
@@ -40,7 +40,7 @@ class SetAbstractionLayer(nn.Module):
         Returns:
             point_coord: (B, N, 3) tensor containing point clouds' xyz coordinates.
             features: (B, N, C) tensor
-            
+        
         Todo:
             Sampling layer: use farthest point sampling(FPS) to get subset of points.
             Grouping layer: use ball query algorithm to get N' clusters of points.
@@ -48,14 +48,16 @@ class SetAbstractionLayer(nn.Module):
             PointNet layer: each clusters are processed within PointNet-like module
                 and the output is abstracted by its centroid and local feature.
         """
-        ...        
+        centroid_indices = self.sampling(point_coord, self.num_sample)
+        centroid_coord = self.gather(point_coord, centroid_indices)
         
-        return ...
+        return centroid_coord
 
 class FarthestPointSampling(Function):
     """
     Custom function implementation of farthest point sampling(FPS).
     Wrapping farthestPointSampling function.
+    
     Args:
         point_coord: (B, N, 3) tensor
         num_sample: number of sampled points
@@ -83,6 +85,7 @@ def farthestPointSampling(
     """
     Finds indices of a subset of points that are the farthest away from each other.
     Source code courtesy: pytorch3d docs
+    
     Args:
         point_coord: (B, N, 3) tensor
         num_sample: number of sampled points
