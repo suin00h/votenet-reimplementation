@@ -2,6 +2,7 @@ import random
 
 import torch
 import torch.nn as nn
+from torch.autograd import Function
 
 class PointNetpp(nn.Module):
     def __init__(self):
@@ -24,7 +25,7 @@ class SetAbstractionLayer(nn.Module):
     ):
         super().__init__()
         
-        ...
+        self.sampling = FarthestPointSampling.apply
 
     def forward(
         self,
@@ -47,33 +48,59 @@ class SetAbstractionLayer(nn.Module):
             PointNet layer: each clusters are processed within PointNet-like module
                 and the output is abstracted by its centroid and local feature.
         """
-        
+        ...        
         
         return ...
+
+class FarthestPointSampling(Function):
+    """
+    Custom function implementation of farthest point sampling(FPS).
+    Wrapping farthestPointSampling function.
+    Args:
+        point_coord: (B, N, 3) tensor
+        num_sample: number of sampled points
+    Returns:
+        sample_indices: (B, num_sample) tensor of indices
+    """
+    @staticmethod
+    def forward(
+        ctx,
+        point_coord: torch.Tensor,
+        num_sample: int
+    ) -> torch.Tensor:
+        sample_indices = farthestPointSampling(point_coord, num_sample)
+        ctx.mark_non_differentiable(sample_indices)
+        return sample_indices
     
-@torch.no_grad()
-def FPS(
-    points: torch.Tensor,
+    @staticmethod
+    def backward(ctx, g=None):
+        return None, None
+
+def farthestPointSampling(
+    point_coord: torch.Tensor,
     num_sample: int
 ) -> torch.Tensor:
-    '''
-        Farthest Point Sampling(FPS)
-        Finds indices of a subset of points that are the farthest away from each other.
-        [B, N, 3] -> [B, M]
-        Source code courtesy: pytorch3d docs
-    '''
-    num_batch, num_points, _ = points.size()
-    device = points.device
+    """
+    Finds indices of a subset of points that are the farthest away from each other.
+    Source code courtesy: pytorch3d docs
+    Args:
+        point_coord: (B, N, 3) tensor
+        num_sample: number of sampled points
+    Returns:
+        sample_indices: (B, num_sample) tensor of indices
+    """
+    num_batch, num_points, _ = point_coord.size()
+    device = point_coord.device
     
-    sampled_indices = []    
+    sample_indices = []    
     for batch in range(num_batch):
         sample_idx = torch.full((num_sample, ), -1, dtype=torch.int64, device=device)
-        closest_distances = points.new_full((num_points, ), float("inf"), dtype=torch.float32)
+        closest_distances = point_coord.new_full((num_points, ), float("inf"), dtype=torch.float32)
         selected_idx = random.randint(0, num_points)
         sample_idx[0] = selected_idx
         
         for i in range(num_sample):
-            distance = points[batch, selected_idx, :] - points[batch, :num_points, :]
+            distance = point_coord[batch, selected_idx, :] - point_coord[batch, :num_points, :]
             distance = (distance**2).sum(-1)
             
             closest_distances = torch.min(distance, closest_distances)
@@ -81,10 +108,10 @@ def FPS(
             selected_idx = torch.argmax(closest_distances)
             sample_idx[i] = selected_idx
         
-        sampled_indices.append(sample_idx)
-    sampled_indices = torch.stack(sampled_indices)
+        sample_indices.append(sample_idx)
+    sample_indices = torch.stack(sample_indices)
     
-    return sampled_indices
+    return sample_indices
 
 @torch.no_grad()
 def ball_query(
