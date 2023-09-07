@@ -16,9 +16,8 @@ class SetAbstractionLayer(nn.Module):
     """
     Single set abstraction layer of PointNet++ architecture.
         
-    Parameters
-    ----------
-    ...
+    Args:
+        ...
     """
     def __init__(
         self
