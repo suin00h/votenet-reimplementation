@@ -78,7 +78,7 @@ class FarthestPointSampling(Function):
         return sample_indices
     
     @staticmethod
-    def backward(ctx, g=None):
+    def backward(ctx, grad_output=None):
         return None, None
 
 class GatherPoints(Function):
