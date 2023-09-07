@@ -28,6 +28,7 @@ class SetAbstractionLayer(nn.Module):
         
         self.num_sample = num_sample
         self.sampling = FarthestPointSampling.apply
+        self.gather = GatherPoints.apply
 
     def forward(
         self,
@@ -79,6 +80,46 @@ class FarthestPointSampling(Function):
     @staticmethod
     def backward(ctx, g=None):
         return None, None
+
+class GatherPoints(Function):
+    """
+    Custom function for slicing point cloud tensors according to given indices.
+    
+    Args:
+        points: (B, N, C) tensor
+        indices: (B, N') tensor containing target indices.
+    Returns:
+        new_points: (B, N', C) tensor
+    """
+    @staticmethod
+    def forward(
+        ctx,
+        points: torch.Tensor,
+        indices: torch.Tensor
+    ):
+        new_points_list = []
+        for b, indices_batch in enumerate(indices):
+            new_points_list_batch = [points[b, index, :] for index in indices_batch]
+            new_points_batch = torch.stack(new_points_list_batch)
+            
+            new_points_list.append(new_points_batch)
+        
+        B, N, C = points.shape
+        ctx.for_backwards = (indices, B, N, C)
+        
+        new_points = torch.stack(new_points_list)
+        return new_points
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        indices, B, N, C = ctx.for_backwards
+        grad_features = torch.zeros((B, N, C))
+        
+        for b in range(B):
+            for i, index in enumerate(indices[b]):
+                grad_features[b, index] = grad_output[b, i]
+        
+        return grad_features, None
 
 def farthestPointSampling(
     point_coord: torch.Tensor,
