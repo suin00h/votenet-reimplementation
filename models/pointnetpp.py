@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch import Tensor
 from torch.autograd import Function
 
-from .pointnetpp_utils import (
+from pointnetpp_utils import (
     farthestPointSampling,
     gatherPoints,
     gatherPointsGrad,
@@ -25,14 +25,21 @@ class SetAbstractionLayer(nn.Module):
     
     Args:
         num_sample: the number of points to be sampled by sampler
+        radius: radius of ball query
+        max_num_cluster: maximum number of cluster elements
     """
     def __init__(
         self,
-        num_sample: int
+        num_sample: int,
+        radius: float,
+        max_num_cluster: int
     ):
         super().__init__()
         
         self.num_sample = num_sample
+        self.radius = radius
+        self.max_num_cluster = max_num_cluster
+        
         self.sampling = FarthestPointSampling.apply
         self.gather = GatherPoints.apply
         self.grouping = BallQuery.apply
@@ -61,7 +68,9 @@ class SetAbstractionLayer(nn.Module):
         centroid_indices = self.sampling(point_coord, self.num_sample)
         centroid_coord = self.gather(point_coord, centroid_indices)
         
-        return centroid_coord
+        grouped_points = self.grouping(point_coord, centroid_coord, self.radius, self.max_num_cluster)
+        
+        return grouped_points
 
 class FarthestPointSampling(Function):
     """
@@ -82,6 +91,7 @@ class FarthestPointSampling(Function):
     ) -> Tensor:
         sample_indices = farthestPointSampling(point_coord, num_sample)
         ctx.mark_non_differentiable(sample_indices)
+        
         return sample_indices
     
     @staticmethod
@@ -126,7 +136,7 @@ class BallQuery(Function):
         point_coord: (B, N, 3) tensor
         centroid_coord: (B, N', 3) tensor
         radius: radius of the ball
-        num_sample: maximum number of points in the ball
+        max_num_cluster: maximum number of points in the ball
     Returns:
         cluster_point_indices: (B, N', num_sample) tensor containing indicies of each cluster
     """
@@ -136,11 +146,11 @@ class BallQuery(Function):
         point_coord: Tensor,
         centroid_coord: Tensor,
         radius: float,
-        num_sample: int
+        max_num_cluster: int
     ):
+        cluster_point_indices = ballQuery(point_coord, centroid_coord, radius, max_num_cluster)
         ctx.mark_non_differentiable(cluster_point_indices)
         
-        cluster_point_indices = ballQuery(point_coord, centroid_coord, radius, num_sample)
         return cluster_point_indices
     
     @staticmethod
@@ -148,16 +158,15 @@ class BallQuery(Function):
         return None, None, None, None
 
 if __name__ == "__main__":
-    # points = torch.rand([10, 1024, 3])
-    # sampled_indices = FPS(points, 10)
-    # print(points[sampled_indices].shape)
+    sample_input = torch.randn((10, 100, 3), requires_grad=True)
+    sa = SetAbstractionLayer(10, 0.2, 5)
+    output = sa(sample_input, None)
+    print(output.shape)
+    print(output.is_contiguous())
     
-    # for indices in sampled_indices:
-    #     print(indices)
-    
-    points = torch.rand((10, 3))
-    centroid_indices = torch.randint(0, 10, (5, ))
-    radius = 0.3
-    
-    print(ball_query(points, centroid_indices, radius))
-    
+    # from torch import optim
+    # opt = optim.Adam(sa.parameters())
+    # target = torch.randn((10, 10, 3))
+    # loss = (target - output).view(-1).sum()
+    # loss.backward()
+    # opt.step()
