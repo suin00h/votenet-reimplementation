@@ -2,3 +2,4 @@ dataset/ModelNet40/
 __pycache__
 demo.py
 .DS_STORE
+ref/
