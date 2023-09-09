@@ -52,11 +52,11 @@ class SetAbstractionLayer(nn.Module):
         """
         Args:
             point_coord: (B, N, 3) tensor
-            features: (B, N, C) tensor
+            features: (B, C, N) tensor
         
         Returns:
             point_coord: (B, N, 3) tensor containing point clouds' xyz coordinates
-            features: (B, N, C) tensor
+            features: (B, C, N) tensor
         
         Todo:
             Sampling layer: use farthest point sampling(FPS) to get subset of points.
@@ -104,10 +104,10 @@ class GatherPoints(Function):
     Wrapping gatherPoints and gatherPointsGrad function.
     
     Args:
-        points: (B, N, C) tensor
+        points: (B, N, 3) tensor
         indices: (B, N') tensor containing target indices
     Returns:
-        new_points: (B, N', C) tensor
+        new_points: (B, N', 3) tensor
     """
     @staticmethod
     def forward(
