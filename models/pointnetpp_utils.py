@@ -174,7 +174,6 @@ class BallQuery(Function):
     def backward(ctx, grad_output):
         return None, None, None, None
 
-
 def ballQuery(
     point_coord: Tensor,
     centroid_coord: Tensor,
@@ -197,7 +196,7 @@ def ballQuery(
         dist2 = dist ** 2
         dist2 = dist2.sum(1)
         return dist2
-
+    
     radius2 = radius ** 2
     num_batch = centroid_coord.shape[0]
     num_centroid = centroid_coord.shape[1]
