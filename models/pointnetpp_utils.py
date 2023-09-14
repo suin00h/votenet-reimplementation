@@ -155,7 +155,7 @@ class BallQuery(Function):
         radius: radius of the ball
         max_num_cluster: maximum number of points in the ball
     Returns:
-        cluster_point_indices: (B, N', num_sample) tensor containing indicies of each cluster
+        cluster_point_indices: (B, N', max_num_cluster) tensor containing indicies of each cluster
     """
     @staticmethod
     def forward(
@@ -189,37 +189,25 @@ def ballQuery(
         radius: radius of the ball
         max_num_cluster: maximum number of points in the ball
     Returns:
-        cluster_point_indices: (B, N', num_sample) tensor containing indicies of each cluster
+        cluster_point_indices: (B, N', max_num_cluster) tensor containing indicies of each cluster
     """
-    def getDistance(centroid_coord, point_coord):
-        dist = centroid_coord - point_coord
-        dist2 = dist ** 2
-        dist2 = dist2.sum(1)
-        return dist2
-
-    radius2 = radius ** 2
-    num_batch = centroid_coord.shape[0]
-    num_centroid = centroid_coord.shape[1]
+    num_batch = point_coord.size(0)
+    num_sample = centroid_coord.size(1)
+    rad2 = radius ** 2
     
-    cluster_point_indices_list = []
+    cluster_point_indices = torch.zeros((num_batch, num_sample, max_num_cluster), dtype=torch.int64, device=point_coord.device)
     for b in range(num_batch):
-        indices_list_batch = []
-        for i in range(num_centroid):
-            dist2 = getDistance(centroid_coord[b, i], point_coord[b])
-            indices = torch.zeros((max_num_cluster, ))
-            cnt = 0
-            for k, bool in enumerate(dist2 < radius2):
-                if bool:
-                    indices[cnt] = k
-                    cnt += 1
-                if cnt == max_num_cluster:
-                    break
-            
-            indices_list_batch.append(indices)
-        indices_batch = torch.stack(indices_list_batch)
-        cluster_point_indices_list.append(indices_batch)
+        for n in range(num_sample):
+            distance = centroid_coord[b, n] - point_coord[b]
+            dist2 = (distance ** 2).sum(1)
+            count = 0
+            for k, isQuery in enumerate(dist2 < rad2):
+                if not isQuery:
+                    continue
+                if count == 0:
+                    cluster_point_indices[b, n] = torch.full((max_num_cluster, ), k)    
+                cluster_point_indices[b, n, count] = k
     
-    cluster_point_indices = torch.stack(cluster_point_indices_list)
     return cluster_point_indices
 
 class GroupingLayer(nn.Module):
