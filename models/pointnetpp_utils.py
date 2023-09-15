@@ -1,5 +1,4 @@
 import random
-from typing import Sequence
 
 import torch
 from torch import nn
@@ -254,8 +253,8 @@ class GroupingLayer(nn.Module):
         """
         cluster_indices = self.ball_query(point_coord, centroid_coord, self.radius, self.max_num_cluster)
         
-        grouped_coord = grouped_coord.transpose(1, 2).contiguous()
         grouped_coord = self.grouper(point_coord, cluster_indices)
+        grouped_coord = grouped_coord.transpose(1, 2).contiguous()
         grouped_coord -= centroid_coord.transpose(1, 2).unsqueeze(-1)
         if self.normalize_coord:
             grouped_coord /= self.radius
