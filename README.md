@@ -1,5 +1,5 @@
 ![3D Vision](https://img.shields.io/badge/3D_Vision-8A8DED?style=flat-square&logo=gtk&logoColor=8A8DED&label=Tag&labelColor=212030)
-![Object Detection](https://img.shields.io/badge/Object_Detection-93C500?style=flat-square&logo=lens&logoColor=93C500&label=Tag&labelColor=212030)
+![Object Detection](https://img.shields.io/badge/Object_Detection-587601?style=flat-square&logo=lens&logoColor=93C500&label=Tag&labelColor=212030)
 ![Techs](https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=EE4C2C&label=Tech&labelColor=212030)
 ![Status](https://img.shields.io/badge/Working-19947C?style=flat-square&logo=esbuild&logoColor=24DBB6&label=Status&labelColor=212030)
 ## About
