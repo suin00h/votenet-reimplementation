@@ -1,4 +1,5 @@
 dataset/ModelNet40/
+dataset/modelnet40_ply_hdf5_2048/
 __pycache__
 demo.py
 .DS_STORE
